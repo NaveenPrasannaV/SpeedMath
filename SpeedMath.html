@@ -1,0 +1,1510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SpeedMath Pro • Mental Math Quiz</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#eef2ff',
+              100: '#e0e7ff',
+              400: '#818cf8',
+              500: '#6366f1',
+              600: '#4f46e5',
+              700: '#4338ca',
+            }
+          },
+          keyframes: {
+            pop: {
+              '0%': { transform: 'scale(0.95)', opacity: '0' },
+              '100%': { transform: 'scale(1)', opacity: '1' }
+            },
+            shake: {
+              '0%, 100%': { transform: 'translateX(0)' },
+              '20%, 60%': { transform: 'translateX(-6px)' },
+              '40%, 80%': { transform: 'translateX(6px)' }
+            },
+            pulseSuccess: {
+              '0%': { transform: 'scale(1)' },
+              '50%': { transform: 'scale(1.04)' },
+              '100%': { transform: 'scale(1)' }
+            }
+          },
+          animation: {
+            pop: 'pop 0.2s cubic-bezier(0.16, 1, 0.3, 1)',
+            shake: 'shake 0.35s ease-in-out',
+            pulseSuccess: 'pulseSuccess 0.25s ease-out',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    /* Custom styling for speed training */
+    input[type=number]::-webkit-inner-spin-button, 
+    input[type=number]::-webkit-outer-spin-button { 
+      -webkit-appearance: none; 
+      margin: 0; 
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+    .tap-highlight-transparent {
+      -webkit-tap-highlight-color: transparent;
+    }
+    /* Smooth transitions */
+    .theme-transition {
+      transition: background-color 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans antialiased selection:bg-brand-500 selection:text-white theme-transition flex flex-col justify-between">
+
+  <!-- Top App Navigation Bar -->
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
+    <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3 cursor-pointer" onclick="returnToSetup()">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center shadow-lg shadow-brand-500/20 text-white font-mono font-bold text-xl">
+          ⚡
+        </div>
+        <div>
+          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+            SpeedMath <span class="text-xs px-2 py-0.5 rounded-full bg-brand-500/20 text-brand-400 font-semibold border border-brand-500/30">PRO</span>
+          </h1>
+          <p class="text-[11px] text-slate-400">Mental Calculation Mastery</p>
+        </div>
+      </div>
+
+      <div class="flex items-center space-x-2 sm:space-x-3">
+        <!-- Sound Toggle -->
+        <button id="soundToggleBtn" onclick="toggleSound()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 transition-all hover:text-white" title="Toggle Sound">
+          <i data-lucide="volume-2" id="soundIcon" class="w-4 h-4"></i>
+        </button>
+        <!-- Theme Toggle -->
+        <button id="themeToggleBtn" onclick="toggleTheme()" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 transition-all hover:text-white" title="Toggle Theme">
+          <i data-lucide="sun" id="themeIcon" class="w-4 h-4"></i>
+        </button>
+        <!-- Cheat Sheet / Reference modal trigger -->
+        <button onclick="toggleReferenceModal(true)" class="p-2.5 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/60 text-slate-300 transition-all hover:text-white flex items-center gap-1 text-xs font-semibold" title="View Formulas & Constants">
+          <i data-lucide="book-open" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Reference</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 flex flex-col justify-center">
+
+    <!-- ==================== VIEW 1: SETUP & TOPIC SELECTION ==================== -->
+    <section id="setupView" class="w-full max-w-3xl mx-auto py-2">
+      <div class="text-center mb-6">
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Configure Your Mental Math Drill</h2>
+        <p class="text-slate-400 text-sm mt-1">Select the speed math topics you want to practice and choose a game mode.</p>
+      </div>
+
+      <!-- Quick presets -->
+      <div class="flex items-center justify-between mb-3 px-1">
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider">Select Topics (7 Categories)</label>
+        <div class="space-x-2">
+          <button type="button" onclick="selectAllTopics(true)" class="text-xs font-semibold text-brand-400 hover:text-brand-300">Select All</button>
+          <span class="text-slate-600">•</span>
+          <button type="button" onclick="selectAllTopics(false)" class="text-xs font-semibold text-slate-400 hover:text-slate-300">Clear</button>
+        </div>
+      </div>
+
+      <!-- Topics Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6" id="topicsContainer">
+        <!-- Topic 1 -->
+        <label class="topic-card cursor-pointer group flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-brand-500/50 transition-all shadow-sm">
+          <input type="checkbox" name="topics" value="tables" checked class="mt-1 rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-200 group-hover:text-white">1. Tables up to 20×20</span>
+              <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-400">17×8, 19×7</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Multiplications from 2×2 up to 20×20 with focus on tricky teens.</p>
+          </div>
+        </label>
+
+        <!-- Topic 2 -->
+        <label class="topic-card cursor-pointer group flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-brand-500/50 transition-all shadow-sm">
+          <input type="checkbox" name="topics" value="squares" checked class="mt-1 rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-200 group-hover:text-white">2. Squares up to 25</span>
+              <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-400">14², 23²</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Memorize squares from 11² to 25² (e.g. 23² = 529, 24² = 576).</p>
+          </div>
+        </label>
+
+        <!-- Topic 3 -->
+        <label class="topic-card cursor-pointer group flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-brand-500/50 transition-all shadow-sm">
+          <input type="checkbox" name="topics" value="cubes" checked class="mt-1 rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-200 group-hover:text-white">3. Cubes up to 12</span>
+              <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-400">7³, 9³, 11³</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Rapid cube recall from 2³ up to 12³ (11³ = 1331, 12³ = 1728).</p>
+          </div>
+        </label>
+
+        <!-- Topic 4 -->
+        <label class="topic-card cursor-pointer group flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-brand-500/50 transition-all shadow-sm">
+          <input type="checkbox" name="topics" value="powers2" checked class="mt-1 rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-200 group-hover:text-white">4. Powers of 2 (up to 12)</span>
+              <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-400">2⁷, 2¹⁰, 2¹²</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Essential binary scales from 2¹ = 2 up to 2¹² = 4096.</p>
+          </div>
+        </label>
+
+        <!-- Topic 5 -->
+        <label class="topic-card cursor-pointer group flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-brand-500/50 transition-all shadow-sm">
+          <input type="checkbox" name="topics" value="powers3" checked class="mt-1 rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-200 group-hover:text-white">5. Powers of 3 (up to 8)</span>
+              <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-400">3⁵, 3⁷, 3⁸</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Powers of three from 3¹ = 3 to 3⁸ = 6561.</p>
+          </div>
+        </label>
+
+        <!-- Topic 6 -->
+        <label class="topic-card cursor-pointer group flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-brand-500/50 transition-all shadow-sm">
+          <input type="checkbox" name="topics" value="fractions" checked class="mt-1 rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-200 group-hover:text-white">6. Fractions to % (up to 12)</span>
+              <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-400">1/6, 1/7, 1/8</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Key percentage equivalents: 1/6 (16.66%), 1/8 (12.5%), 1/11 (9.09%).</p>
+          </div>
+        </label>
+
+        <!-- Topic 7 -->
+        <label class="topic-card cursor-pointer group sm:col-span-2 flex items-start gap-3 p-3.5 rounded-2xl bg-slate-900/80 border border-slate-800 hover:border-brand-500/50 transition-all shadow-sm">
+          <input type="checkbox" name="topics" value="complements" checked class="mt-1 rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          <div class="flex-1">
+            <div class="flex items-center justify-between">
+              <span class="text-sm font-bold text-slate-200 group-hover:text-white">7. Complements of 100</span>
+              <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded font-mono text-slate-400">100 - 37 = 63</span>
+            </div>
+            <p class="text-xs text-slate-400 mt-0.5">Instant Vedic subtraction from 100 for fast ledger calculation and change counting.</p>
+          </div>
+        </label>
+      </div>
+
+      <!-- Mode Selection Tabs -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-2xl p-4 sm:p-5 mb-6">
+        <!-- DIFFICULTY SELECTOR -->
+        <div class="mb-5">
+          <div class="flex items-center justify-between mb-2.5">
+            <label class="text-xs font-bold text-slate-400 uppercase tracking-wider flex items-center gap-1.5">
+              <i data-lucide="gauge" class="w-4 h-4 text-brand-400"></i>
+              Difficulty Level
+            </label>
+            <span id="diffMultiplierBadge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold">
+              1.0× Point Multiplier
+            </span>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2.5">
+            <!-- Easy -->
+            <button type="button" onclick="setDifficulty('easy')" id="diff-easy" class="diff-btn p-3 rounded-xl border-2 border-emerald-500/80 bg-emerald-500/15 text-white font-medium text-xs sm:text-sm text-center flex flex-col items-center gap-1 transition-all shadow-sm">
+              <span class="flex items-center gap-1 font-extrabold text-emerald-400">
+                <i data-lucide="shield-check" class="w-4 h-4"></i> Easy
+              </span>
+              <span class="text-[10px] text-slate-400 font-normal">Foundations & basics</span>
+            </button>
+
+            <!-- Medium -->
+            <button type="button" onclick="setDifficulty('medium')" id="diff-medium" class="diff-btn p-3 rounded-xl border-2 border-slate-800 bg-slate-800/40 text-slate-300 font-medium text-xs sm:text-sm text-center flex flex-col items-center gap-1 transition-all hover:bg-slate-800">
+              <span class="flex items-center gap-1 font-extrabold text-amber-400">
+                <i data-lucide="zap" class="w-4 h-4"></i> Medium
+              </span>
+              <span class="text-[10px] text-slate-400 font-normal">Standard speed drill</span>
+            </button>
+
+            <!-- Hard -->
+            <button type="button" onclick="setDifficulty('hard')" id="diff-hard" class="diff-btn p-3 rounded-xl border-2 border-slate-800 bg-slate-800/40 text-slate-300 font-medium text-xs sm:text-sm text-center flex flex-col items-center gap-1 transition-all hover:bg-slate-800">
+              <span class="flex items-center gap-1 font-extrabold text-rose-400">
+                <i data-lucide="flame" class="w-4 h-4"></i> Hard
+              </span>
+              <span class="text-[10px] text-slate-400 font-normal">Mastery & top limits</span>
+            </button>
+          </div>
+        </div>
+
+        <label class="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-3">Choose Game Mode</label>
+        
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
+          <button type="button" onclick="setMode('blitz60')" id="mode-blitz60" class="mode-btn p-3 rounded-xl border border-brand-500/60 bg-brand-500/10 text-white font-medium text-xs sm:text-sm text-center flex flex-col items-center gap-1.5 transition-all">
+            <i data-lucide="timer" class="w-5 h-5 text-brand-400"></i>
+            <span class="font-bold">60s Blitz</span>
+            <span class="text-[10px] text-slate-400 font-normal">Score as much as possible</span>
+          </button>
+
+          <button type="button" onclick="setMode('blitz120')" id="mode-blitz120" class="mode-btn p-3 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-300 font-medium text-xs sm:text-sm text-center flex flex-col items-center gap-1.5 transition-all hover:bg-slate-800">
+            <i data-lucide="hourglass" class="w-5 h-5 text-indigo-400"></i>
+            <span class="font-bold">120s Blitz</span>
+            <span class="text-[10px] text-slate-400 font-normal">Endurance sprint</span>
+          </button>
+
+          <button type="button" onclick="setMode('standard20')" id="mode-standard20" class="mode-btn p-3 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-300 font-medium text-xs sm:text-sm text-center flex flex-col items-center gap-1.5 transition-all hover:bg-slate-800">
+            <i data-lucide="target" class="w-5 h-5 text-emerald-400"></i>
+            <span class="font-bold">20 Questions</span>
+            <span class="text-[10px] text-slate-400 font-normal">Accuracy & pace review</span>
+          </button>
+
+          <button type="button" onclick="setMode('endless')" id="mode-endless" class="mode-btn p-3 rounded-xl border border-slate-800 bg-slate-800/40 text-slate-300 font-medium text-xs sm:text-sm text-center flex flex-col items-center gap-1.5 transition-all hover:bg-slate-800">
+            <i data-lucide="infinity" class="w-5 h-5 text-amber-400"></i>
+            <span class="font-bold">Zen Endless</span>
+            <span class="text-[10px] text-slate-400 font-normal">Casual practice session</span>
+          </button>
+        </div>
+
+        <!-- Input mode toggle preference -->
+        <div class="flex items-center justify-between border-t border-slate-800/80 pt-3 text-xs text-slate-400">
+          <span class="flex items-center gap-1.5 font-medium">
+            <i data-lucide="keyboard" class="w-4 h-4 text-slate-400"></i>
+            Physical keyboard supported (Enter / NumPad)
+          </span>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <span>Show on-screen Keypad</span>
+            <input type="checkbox" id="keypadToggle" checked class="rounded text-brand-500 focus:ring-brand-400 bg-slate-800 border-slate-700 w-4 h-4 accent-brand-500">
+          </label>
+        </div>
+      </div>
+
+      <!-- Start Button & Error Alert -->
+      <div id="selectionError" class="hidden mb-4 p-3 bg-rose-500/10 border border-rose-500/30 rounded-xl text-xs text-rose-300 text-center flex items-center justify-center gap-2">
+        <i data-lucide="alert-circle" class="w-4 h-4"></i>
+        <span>Please select at least one topic to begin!</span>
+      </div>
+
+      <button onclick="startQuiz()" class="w-full py-4 rounded-2xl bg-gradient-to-r from-brand-600 via-indigo-600 to-indigo-500 hover:from-brand-500 hover:to-indigo-400 text-white font-extrabold text-base tracking-wide shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 transition-all flex items-center justify-center gap-2 active:scale-[0.99]">
+        <i data-lucide="play" class="w-5 h-5 fill-white"></i>
+        <span>START SPEED DRILL</span>
+      </button>
+    </section>
+
+    <!-- ==================== VIEW 2: ACTIVE QUIZ ==================== -->
+    <section id="quizView" class="hidden w-full max-w-xl mx-auto flex flex-col items-center">
+      
+      <!-- Live HUD Header -->
+      <div class="w-full bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 sm:p-4 mb-4 shadow-xl backdrop-blur-md">
+        <div class="flex items-center justify-between gap-3">
+          <!-- Mode info / timer & difficulty badge -->
+          <div class="flex items-center gap-2">
+            <div id="hudDifficultyBadge" class="px-2.5 py-1 rounded-xl font-mono text-xs font-bold uppercase tracking-wide border flex items-center gap-1">
+              EASY
+            </div>
+            <div id="timerBadge" class="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-800 font-mono font-bold text-sm text-brand-400 border border-slate-700">
+              <i data-lucide="clock" class="w-4 h-4"></i>
+              <span id="timerDisplay">60s</span>
+            </div>
+            <div id="progressBadge" class="hidden font-mono text-xs text-slate-400 px-2 py-1 bg-slate-800/60 rounded-lg border border-slate-700/50">
+              <span id="currentQNum">1</span>/<span id="totalQNum">20</span>
+            </div>
+          </div>
+
+          <!-- Streak Badge -->
+          <div class="flex items-center gap-2">
+            <div class="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold text-xs sm:text-sm font-mono">
+              <i data-lucide="flame" class="w-4 h-4 fill-amber-400 text-amber-400 animate-bounce"></i>
+              <span id="streakDisplay">0</span>
+              <span class="hidden sm:inline text-[11px] font-normal text-amber-500/80">streak</span>
+            </div>
+            <!-- Score / Accuracy -->
+            <div class="text-right">
+              <div class="font-mono font-bold text-sm sm:text-base text-white" id="scoreDisplay">0 pts</div>
+              <div class="text-[10px] text-slate-400 font-mono" id="accuracyDisplay">100% acc</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Progress bar (for timed or count) -->
+        <div class="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+          <div id="progressBar" class="bg-gradient-to-r from-brand-500 to-indigo-400 h-full w-full transition-all duration-300 ease-linear"></div>
+        </div>
+      </div>
+
+      <!-- Question Flash Card -->
+      <div id="questionCard" class="w-full bg-gradient-to-b from-slate-900 to-slate-950 border-2 border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col items-center justify-center relative shadow-2xl transition-all duration-200 min-h-[200px]">
+        <!-- Category Pill -->
+        <span id="questionCategory" class="text-xs uppercase tracking-wider font-bold px-3 py-1 rounded-full bg-slate-800 border border-slate-700 text-slate-400 mb-4 transition-colors">
+          Topic
+        </span>
+
+        <!-- Expression -->
+        <div id="questionText" class="font-mono text-4xl sm:text-5xl font-extrabold text-white tracking-tight text-center select-none">
+          --
+        </div>
+
+        <!-- Instant Feedback Overlay Floating Indicator -->
+        <div id="feedbackPill" class="absolute -top-3.5 px-4 py-1 rounded-full text-xs font-bold font-mono tracking-wide shadow-md transition-all opacity-0 pointer-events-none">
+          Correct!
+        </div>
+      </div>
+
+      <!-- Multiple Choice Options (Rendered specifically for fractions or toggled) -->
+      <div id="fractionChoicesContainer" class="w-full grid grid-cols-2 gap-2 mt-4 hidden">
+        <!-- Rendered dynamically -->
+      </div>
+
+      <!-- Answer Input & Controls -->
+      <form id="answerForm" onsubmit="handleFormSubmit(event)" class="w-full mt-4 flex gap-2">
+        <div class="relative flex-1">
+          <input 
+            type="text" 
+            id="answerInput" 
+            autocomplete="off" 
+            inputmode="decimal"
+            placeholder="Your answer..." 
+            class="w-full px-5 py-4 rounded-2xl bg-slate-900 border-2 border-slate-700/80 text-white font-mono text-2xl sm:text-3xl text-center focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/20 transition-all font-bold placeholder:text-slate-600 shadow-inner"
+          />
+          <button 
+            type="button" 
+            onclick="clearInput()" 
+            class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300 p-1 rounded-md"
+            title="Clear">
+            <i data-lucide="delete" class="w-5 h-5"></i>
+          </button>
+        </div>
+
+        <button 
+          type="submit" 
+          id="submitAnswerBtn"
+          class="px-6 py-4 rounded-2xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-lg shadow-lg shadow-brand-600/30 active:scale-95 transition-all flex items-center justify-center">
+          <i data-lucide="corner-down-left" class="w-6 h-6"></i>
+        </button>
+      </form>
+
+      <!-- Clean Virtual Speed Keypad (Optimized for touchscreens & mobile math blitz) -->
+      <div id="virtualKeypad" class="w-full mt-4 select-none">
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" onclick="keypadPress('1')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">1</button>
+          <button type="button" onclick="keypadPress('2')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">2</button>
+          <button type="button" onclick="keypadPress('3')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">3</button>
+
+          <button type="button" onclick="keypadPress('4')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">4</button>
+          <button type="button" onclick="keypadPress('5')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">5</button>
+          <button type="button" onclick="keypadPress('6')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">6</button>
+
+          <button type="button" onclick="keypadPress('7')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">7</button>
+          <button type="button" onclick="keypadPress('8')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">8</button>
+          <button type="button" onclick="keypadPress('9')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">9</button>
+
+          <button type="button" onclick="keypadPress('.')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">.</button>
+          <button type="button" onclick="keypadPress('0')" class="keypad-key py-3.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-white font-mono text-2xl font-bold shadow active:bg-brand-600/40 transition-colors">0</button>
+          <button type="button" onclick="keypadBackspace()" class="keypad-key py-3.5 rounded-xl bg-rose-950/30 hover:bg-rose-900/40 border border-rose-900/40 text-rose-300 font-mono text-xl font-bold shadow active:bg-rose-900/60 transition-colors flex items-center justify-center">
+            <i data-lucide="delete" class="w-6 h-6"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center justify-between w-full mt-4 text-xs">
+        <button type="button" onclick="skipQuestion()" class="text-slate-400 hover:text-slate-200 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 flex items-center gap-1.5 transition-colors">
+          <i data-lucide="skip-forward" class="w-3.5 h-3.5"></i>
+          <span>Skip (-5s / penalty)</span>
+        </button>
+
+        <button type="button" onclick="endQuizEarly()" class="text-rose-400 hover:text-rose-300 px-3 py-1.5 rounded-lg bg-rose-950/20 border border-rose-900/30 flex items-center gap-1.5 transition-colors">
+          <i data-lucide="x" class="w-3.5 h-3.5"></i>
+          <span>Finish Session</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ==================== VIEW 3: RESULTS & REVIEW ==================== -->
+    <section id="resultsView" class="hidden w-full max-w-2xl mx-auto py-2">
+      <div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 sm:p-8 shadow-2xl text-center">
+        <!-- Grade / Trophy Header -->
+        <div class="w-20 h-20 mx-auto rounded-3xl bg-gradient-to-tr from-brand-600 to-indigo-400 flex items-center justify-center text-3xl shadow-xl shadow-brand-500/25 mb-4 animate-pop">
+          🏆
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Session Complete!</h2>
+        <p id="resultSummarySubtext" class="text-slate-400 text-sm mt-1">Excellent speed drill work.</p>
+
+        <!-- Main KPI Cards -->
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 my-6">
+          <div class="bg-slate-800/60 border border-slate-700/60 p-3.5 rounded-2xl relative">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Total Score</span>
+            <span id="finalScoreVal" class="text-2xl font-mono font-extrabold text-white">0</span>
+            <span id="finalDiffTag" class="text-[9px] font-mono uppercase px-1.5 py-0.5 rounded bg-brand-500/20 text-brand-300 absolute top-2 right-2 border border-brand-500/30">Easy</span>
+          </div>
+          <div class="bg-slate-800/60 border border-slate-700/60 p-3.5 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Accuracy</span>
+            <span id="finalAccVal" class="text-2xl font-mono font-extrabold text-emerald-400">0%</span>
+          </div>
+          <div class="bg-slate-800/60 border border-slate-700/60 p-3.5 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Best Streak</span>
+            <span id="finalStreakVal" class="text-2xl font-mono font-extrabold text-amber-400">0 🔥</span>
+          </div>
+          <div class="bg-slate-800/60 border border-slate-700/60 p-3.5 rounded-2xl">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">Avg Pace</span>
+            <span id="finalPaceVal" class="text-2xl font-mono font-extrabold text-indigo-300">0.0s</span>
+          </div>
+        </div>
+
+        <!-- Category Breakdown Stats Table -->
+        <div class="text-left mb-6">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="text-xs font-bold text-slate-400 uppercase tracking-wider">Topic Mastery Breakdown</h3>
+            <span class="text-[11px] text-slate-500">Correct / Attempted</span>
+          </div>
+          <div id="categoryBreakdownList" class="space-y-2 max-h-56 overflow-y-auto pr-1">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+
+        <!-- History Review of incorrect questions -->
+        <div id="mistakesContainer" class="text-left mb-6 hidden">
+          <h3 class="text-xs font-bold text-rose-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
+            <i data-lucide="alert-triangle" class="w-3.5 h-3.5"></i>
+            Questions to Review
+          </h3>
+          <div id="mistakesList" class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
+            <!-- Populated via JavaScript -->
+          </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex flex-col sm:flex-row gap-3 pt-2">
+          <button onclick="restartSameQuiz()" class="flex-1 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-500 text-white font-bold text-sm shadow-lg shadow-brand-600/30 transition-all flex items-center justify-center gap-2 active:scale-95">
+            <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+            <span>Play Again</span>
+          </button>
+          <button onclick="returnToSetup()" class="flex-1 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-bold text-sm transition-all flex items-center justify-center gap-2 active:scale-95">
+            <i data-lucide="sliders" class="w-4 h-4"></i>
+            <span>Change Topics / Mode</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Reference Cheat Sheet Modal -->
+  <div id="referenceModal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-3xl w-full max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+      <!-- Modal Header -->
+      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80">
+        <div class="flex items-center gap-2">
+          <i data-lucide="sparkles" class="w-5 h-5 text-brand-400"></i>
+          <h3 class="font-bold text-lg text-white">Speed Math Reference & Cheatsheet</h3>
+        </div>
+        <button onclick="toggleReferenceModal(false)" class="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800">
+          <i data-lucide="x" class="w-5 h-5"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="p-6 overflow-y-auto space-y-6 text-sm text-slate-300 font-mono">
+        <!-- Topic 1 & 2 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+            <h4 class="font-sans font-bold text-brand-400 text-xs uppercase mb-2">2. Squares (11 to 25)</h4>
+            <div class="grid grid-cols-2 gap-1 text-xs">
+              <div>11² = 121</div><div>12² = 144</div>
+              <div>13² = 169</div><div>14² = 196</div>
+              <div>15² = 225</div><div>16² = 256</div>
+              <div>17² = 289</div><div>18² = 324</div>
+              <div>19² = 361</div><div>20² = 400</div>
+              <div>21² = 441</div><div>22² = 484</div>
+              <div>23² = 529</div><div>24² = 576</div>
+              <div class="col-span-2 text-indigo-400 font-bold">25² = 625</div>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+            <h4 class="font-sans font-bold text-brand-400 text-xs uppercase mb-2">3. Cubes (1 to 12)</h4>
+            <div class="grid grid-cols-2 gap-1 text-xs">
+              <div>1³ = 1</div><div>2³ = 8</div>
+              <div>3³ = 27</div><div>4³ = 64</div>
+              <div>5³ = 125</div><div>6³ = 216</div>
+              <div>7³ = 343</div><div>8³ = 512</div>
+              <div>9³ = 729</div><div>10³ = 1000</div>
+              <div>11³ = 1331</div><div>12³ = 1728</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Topic 4 & 5 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+            <h4 class="font-sans font-bold text-brand-400 text-xs uppercase mb-2">4. Powers of 2 (up to 12)</h4>
+            <div class="grid grid-cols-2 gap-1 text-xs">
+              <div>2¹ = 2</div><div>2² = 4</div>
+              <div>2³ = 8</div><div>2⁴ = 16</div>
+              <div>2⁵ = 32</div><div>2⁶ = 64</div>
+              <div>2⁷ = 128</div><div>2⁸ = 256</div>
+              <div>2⁹ = 512</div><div>2¹⁰ = 1024</div>
+              <div>2¹¹ = 2048</div><div>2¹² = 4096</div>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+            <h4 class="font-sans font-bold text-brand-400 text-xs uppercase mb-2">5. Powers of 3 (up to 8)</h4>
+            <div class="grid grid-cols-2 gap-1 text-xs">
+              <div>3¹ = 3</div><div>3² = 9</div>
+              <div>3³ = 27</div><div>3⁴ = 81</div>
+              <div>3⁵ = 243</div><div>3⁶ = 729</div>
+              <div>3⁷ = 2187</div><div>3⁸ = 6561</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Topic 6 & 7 -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+            <h4 class="font-sans font-bold text-brand-400 text-xs uppercase mb-2">6. Fractions to % (1 to 12)</h4>
+            <div class="grid grid-cols-2 gap-1 text-xs">
+              <div>1/2 = 50%</div><div>1/3 = 33.33%</div>
+              <div>1/4 = 25%</div><div>1/5 = 20%</div>
+              <div>1/6 = 16.66%</div><div>1/7 = 14.28%</div>
+              <div>1/8 = 12.5%</div><div>1/9 = 11.11%</div>
+              <div>1/10 = 10%</div><div>1/11 = 9.09%</div>
+              <div class="col-span-2 text-indigo-400">1/12 = 8.33%</div>
+            </div>
+          </div>
+
+          <div class="bg-slate-950/70 p-4 rounded-xl border border-slate-800">
+            <h4 class="font-sans font-bold text-brand-400 text-xs uppercase mb-2">7. Complements of 100</h4>
+            <p class="text-xs font-sans text-slate-400 mb-2">
+              Formula: "All from 9 and the last from 10".<br>
+              E.g., Complement of 37:<br>
+              9 - 3 = 6, 10 - 7 = 3 &rarr; <strong>63</strong>
+            </p>
+            <div class="text-xs text-brand-300">
+              Check: 37 + 63 = 100<br>
+              Check: 74 + 26 = 100
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="px-6 py-3 border-t border-slate-800 bg-slate-900 flex justify-end">
+        <button onclick="toggleReferenceModal(false)" class="px-4 py-2 bg-brand-600 hover:bg-brand-500 text-white rounded-xl text-xs font-bold font-sans">
+          Got it, let's practice!
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="py-4 text-center text-xs text-slate-500 border-t border-slate-900">
+    SpeedMath Interactive • Master mental calculation through repetitive recall
+  </footer>
+
+  <!-- ==================== JAVASCRIPT APPLICATION LOGIC ==================== -->
+  <script>
+    /* ----------------------------------------------------
+     * Audio Engine via Web Audio API (Synthesizer Chimes)
+     * ---------------------------------------------------- */
+    let audioCtx = null;
+    let isSoundEnabled = true;
+
+    function getAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          audioCtx = new AudioContextClass();
+        }
+      }
+      if (audioCtx && audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+      return audioCtx;
+    }
+
+    function playTone(freq, type, duration, delay = 0, vol = 0.15) {
+      if (!isSoundEnabled) return;
+      try {
+        const ctx = getAudioContext();
+        if (!ctx) return;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, ctx.currentTime + delay);
+
+        gain.gain.setValueAtTime(vol, ctx.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + delay + duration);
+
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+
+        osc.start(ctx.currentTime + delay);
+        osc.stop(ctx.currentTime + delay + duration);
+      } catch (e) {
+        console.warn("Audio play prevented:", e);
+      }
+    }
+
+    function soundCorrect() {
+      playTone(523.25, 'sine', 0.1, 0, 0.12);     // C5
+      playTone(659.25, 'sine', 0.15, 0.08, 0.14);  // E5
+      playTone(1046.50, 'sine', 0.22, 0.16, 0.16); // C6
+    }
+
+    function soundWrong() {
+      playTone(220.0, 'sawtooth', 0.15, 0, 0.12);  // Low buzzer
+      playTone(180.0, 'sawtooth', 0.25, 0.1, 0.14);
+    }
+
+    function soundTick() {
+      playTone(800, 'triangle', 0.04, 0, 0.03);
+    }
+
+    function toggleSound() {
+      isSoundEnabled = !isSoundEnabled;
+      const icon = document.getElementById('soundIcon');
+      if (isSoundEnabled) {
+        icon.setAttribute('data-lucide', 'volume-2');
+      } else {
+        icon.setAttribute('data-lucide', 'volume-x');
+      }
+      lucide.createIcons();
+    }
+
+    /* ----------------------------------------------------
+     * Theme Toggle (Dark / Light)
+     * ---------------------------------------------------- */
+    let isDarkMode = true;
+    function toggleTheme() {
+      isDarkMode = !isDarkMode;
+      const html = document.documentElement;
+      const body = document.body;
+      const icon = document.getElementById('themeIcon');
+
+      if (isDarkMode) {
+        html.classList.add('dark');
+        body.classList.remove('bg-slate-100', 'text-slate-900');
+        body.classList.add('bg-slate-950', 'text-slate-100');
+        icon.setAttribute('data-lucide', 'sun');
+      } else {
+        html.classList.remove('dark');
+        body.classList.remove('bg-slate-950', 'text-slate-100');
+        body.classList.add('bg-slate-100', 'text-slate-900');
+        icon.setAttribute('data-lucide', 'moon');
+      }
+      lucide.createIcons();
+    }
+
+    /* ----------------------------------------------------
+     * Application State & Data
+     * ---------------------------------------------------- */
+    const TOPIC_CONFIG = {
+      tables: { name: 'Tables 20×20', color: 'text-indigo-400' },
+      squares: { name: 'Squares up to 25', color: 'text-emerald-400' },
+      cubes: { name: 'Cubes up to 12', color: 'text-purple-400' },
+      powers2: { name: 'Powers of 2', color: 'text-sky-400' },
+      powers3: { name: 'Powers of 3', color: 'text-amber-400' },
+      fractions: { name: 'Fractions to %', color: 'text-pink-400' },
+      complements: { name: 'Complements of 100', color: 'text-teal-400' }
+    };
+
+    // Standard Fraction to % lookup mapping partitioned by difficulty
+    const FRACTION_DATA = {
+      easy: [
+        { num: 1, den: 2, pct: 50, standard: "50%", accepts: ["50", "50%", "50.0", "50.0%"] },
+        { num: 1, den: 4, pct: 25, standard: "25%", accepts: ["25", "25%", "25.0", "25.0%"] },
+        { num: 1, den: 5, pct: 20, standard: "20%", accepts: ["20", "20%", "20.0", "20.0%"] },
+        { num: 1, den: 10, pct: 10, standard: "10%", accepts: ["10", "10%", "10.0", "10.0%"] }
+      ],
+      medium: [
+        { num: 1, den: 3, pct: 33.33, standard: "33.33%", accepts: ["33.33", "33.3", "33.33%", "33.34", "33%"] },
+        { num: 1, den: 6, pct: 16.66, standard: "16.66%", accepts: ["16.66", "16.67", "16.6", "16.66%", "16.67%", "16.7", "16.7%"] },
+        { num: 1, den: 8, pct: 12.5, standard: "12.5%", accepts: ["12.5", "12.5%", "12.50", "12.50%"] }
+      ],
+      hard: [
+        { num: 1, den: 7, pct: 14.28, standard: "14.28%", accepts: ["14.28", "14.29", "14.28%", "14.3", "14.3%"] },
+        { num: 1, den: 9, pct: 11.11, standard: "11.11%", accepts: ["11.11", "11.1", "11.11%", "11.12"] },
+        { num: 1, den: 11, pct: 9.09, standard: "9.09%", accepts: ["9.09", "9.09%", "9.1", "9.1%"] },
+        { num: 1, den: 12, pct: 8.33, standard: "8.33%", accepts: ["8.33", "8.33%", "8.3", "8.34"] }
+      ]
+    };
+
+    let currentDifficulty = 'easy'; // 'easy' | 'medium' | 'hard'
+    let difficultyMultiplier = 1.0;
+    let currentMode = 'blitz60';
+    let selectedTopics = [];
+    let currentQuestion = null;
+    let timerInterval = null;
+    let timeLeft = 60;
+    let totalTimeAllocated = 60;
+    let score = 0;
+    let streak = 0;
+    let bestStreak = 0;
+    let correctCount = 0;
+    let totalQuestionsAnswered = 0;
+    let currentQuestionIndex = 0;
+    let targetQuestionCount = 20;
+    let sessionStartTime = null;
+    let questionStartTime = null;
+
+    // Analytics breakdown
+    let topicStats = {};
+    let sessionMistakes = [];
+
+    /* ----------------------------------------------------
+     * Difficulty Setting Handler
+     * ---------------------------------------------------- */
+    function setDifficulty(diff) {
+      currentDifficulty = diff;
+      const diffButtons = document.querySelectorAll('.diff-btn');
+      diffButtons.forEach(btn => {
+        btn.classList.remove('border-emerald-500/80', 'bg-emerald-500/15', 'border-amber-500/80', 'bg-amber-500/15', 'border-rose-500/80', 'bg-rose-500/15', 'text-white');
+        btn.classList.add('border-slate-800', 'bg-slate-800/40', 'text-slate-300');
+      });
+
+      const multBadge = document.getElementById('diffMultiplierBadge');
+      const activeBtn = document.getElementById(`diff-${diff}`);
+
+      if (diff === 'easy') {
+        difficultyMultiplier = 1.0;
+        activeBtn.classList.remove('border-slate-800', 'bg-slate-800/40', 'text-slate-300');
+        activeBtn.classList.add('border-emerald-500/80', 'bg-emerald-500/15', 'text-white');
+        multBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-bold";
+        multBadge.innerText = "1.0× Point Multiplier";
+      } else if (diff === 'medium') {
+        difficultyMultiplier = 1.5;
+        activeBtn.classList.remove('border-slate-800', 'bg-slate-800/40', 'text-slate-300');
+        activeBtn.classList.add('border-amber-500/80', 'bg-amber-500/15', 'text-white');
+        multBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 font-bold";
+        multBadge.innerText = "1.5× Point Multiplier";
+      } else if (diff === 'hard') {
+        difficultyMultiplier = 2.0;
+        activeBtn.classList.remove('border-slate-800', 'bg-slate-800/40', 'text-slate-300');
+        activeBtn.classList.add('border-rose-500/80', 'bg-rose-500/15', 'text-white');
+        multBadge.className = "text-[10px] font-mono px-2 py-0.5 rounded-full bg-rose-500/10 text-rose-400 border border-rose-500/20 font-bold";
+        multBadge.innerText = "2.0× Point Multiplier";
+      }
+    }
+
+    /* ----------------------------------------------------
+     * Question Generators for the 7 Specific Requirements
+     * Mapped by Easy, Medium, and Hard
+     * ---------------------------------------------------- */
+    function getRandomInt(min, max) {
+      return Math.floor(Math.random() * (max - min + 1)) + min;
+    }
+
+    function generateQuestion() {
+      // Pick random topic from selected
+      const topic = selectedTopics[Math.floor(Math.random() * selectedTopics.length)];
+
+      let display = "";
+      let answer = "";
+      let validAnswers = [];
+      let hint = "Enter numeric answer";
+      let multipleChoices = null;
+
+      const supers = ["⁰","¹","²","³","⁴","⁵","⁶","⁷","⁸","⁹","¹⁰","¹¹","¹²"];
+
+      switch(topic) {
+        case 'tables': {
+          let a, b;
+          if (currentDifficulty === 'easy') {
+            // Tables: single digit x single digit or friendly numbers up to 12x12
+            if (Math.random() < 0.6) {
+              a = getRandomInt(2, 9);
+              b = getRandomInt(2, 9);
+            } else {
+              a = getRandomInt(10, 12);
+              b = getRandomInt(2, 9);
+            }
+          } else if (currentDifficulty === 'medium') {
+            // Tables: 11x11 up to 16x16, mixed double digits with single digits
+            if (Math.random() < 0.5) {
+              a = getRandomInt(11, 16);
+              b = getRandomInt(6, 12);
+            } else {
+              a = getRandomInt(11, 16);
+              b = getRandomInt(11, 16);
+            }
+          } else {
+            // Tables: Hardest double digits 16x16 up to 20x20
+            a = getRandomInt(16, 20);
+            b = getRandomInt(14, 20);
+          }
+          if (Math.random() < 0.5) [a, b] = [b, a];
+          display = `${a} × ${b}`;
+          answer = (a * b).toString();
+          validAnswers = [answer];
+          hint = `Multiplication (${currentDifficulty.toUpperCase()})`;
+          break;
+        }
+
+        case 'squares': {
+          let n;
+          if (currentDifficulty === 'easy') {
+            // Squares: 2^2 up to 12^2
+            n = getRandomInt(2, 12);
+          } else if (currentDifficulty === 'medium') {
+            // Squares: 13^2 up to 20^2
+            n = getRandomInt(13, 20);
+          } else {
+            // Squares: 21^2 up to 25^2
+            n = getRandomInt(21, 25);
+          }
+          display = `${n}²`;
+          answer = (n * n).toString();
+          validAnswers = [answer];
+          hint = `Calculate ${n} × ${n}`;
+          break;
+        }
+
+        case 'cubes': {
+          let n;
+          if (currentDifficulty === 'easy') {
+            // Cubes: 2^3 up to 5^3
+            n = getRandomInt(2, 5);
+          } else if (currentDifficulty === 'medium') {
+            // Cubes: 6^3 up to 9^3
+            n = getRandomInt(6, 9);
+          } else {
+            // Cubes: 10^3 up to 12^3
+            n = getRandomInt(10, 12);
+          }
+          display = `${n}³`;
+          answer = (n * n * n).toString();
+          validAnswers = [answer];
+          hint = `Calculate ${n} × ${n} × ${n}`;
+          break;
+        }
+
+        case 'powers2': {
+          let p;
+          if (currentDifficulty === 'easy') {
+            // Powers of 2: 2^1 to 2^6
+            p = getRandomInt(1, 6);
+          } else if (currentDifficulty === 'medium') {
+            // Powers of 2: 2^6 to 2^9
+            p = getRandomInt(6, 9);
+          } else {
+            // Powers of 2: 2^9 to 2^12
+            p = getRandomInt(9, 12);
+          }
+          display = `2${supers[p] || '^' + p}`;
+          answer = Math.pow(2, p).toString();
+          validAnswers = [answer];
+          hint = `Power of two (exponent = ${p})`;
+          break;
+        }
+
+        case 'powers3': {
+          let p;
+          if (currentDifficulty === 'easy') {
+            // Powers of 3: 3^1 to 3^4
+            p = getRandomInt(1, 4);
+          } else if (currentDifficulty === 'medium') {
+            // Powers of 3: 3^4 to 3^6
+            p = getRandomInt(4, 6);
+          } else {
+            // Powers of 3: 3^6 to 3^8
+            p = getRandomInt(6, 8);
+          }
+          display = `3${supers[p] || '^' + p}`;
+          answer = Math.pow(3, p).toString();
+          validAnswers = [answer];
+          hint = `Power of three (exponent = ${p})`;
+          break;
+        }
+
+        case 'fractions': {
+          // Partitioned fractional banks based on difficulty
+          let pool = FRACTION_DATA[currentDifficulty] || FRACTION_DATA.easy;
+          const item = pool[Math.floor(Math.random() * pool.length)];
+
+          display = `${item.num}/${item.den} = ? %`;
+          answer = item.standard;
+          validAnswers = item.accepts.map(v => v.toLowerCase().replace('%', '').trim());
+          validAnswers.push(...item.accepts.map(v => v.toLowerCase()));
+
+          // Distractor generation across all fractions
+          const allFractions = [...FRACTION_DATA.easy, ...FRACTION_DATA.medium, ...FRACTION_DATA.hard];
+          const distractors = allFractions
+            .filter(f => f.den !== item.den)
+            .sort(() => 0.5 - Math.random())
+            .slice(0, 3)
+            .map(f => f.standard);
+
+          multipleChoices = [item.standard, ...distractors].sort(() => 0.5 - Math.random());
+          break;
+        }
+
+        case 'complements': {
+          let n;
+          if (currentDifficulty === 'easy') {
+            // Multiples of 5 or 10
+            const candidates = [5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95];
+            n = candidates[Math.floor(Math.random() * candidates.length)];
+          } else if (currentDifficulty === 'medium') {
+            // Standard arbitrary 2-digit numbers
+            n = getRandomInt(12, 88);
+          } else {
+            // Hard tricky numbers ending in 1, 9, 7, 3
+            const trickyEnds = [1, 3, 7, 9];
+            const endDigit = trickyEnds[Math.floor(Math.random() * trickyEnds.length)];
+            const tens = getRandomInt(1, 8);
+            n = tens * 10 + endDigit;
+          }
+
+          if (Math.random() < 0.5) {
+            display = `100 − ${n}`;
+          } else {
+            display = `Comp of ${n}`;
+          }
+          answer = (100 - n).toString();
+          validAnswers = [answer];
+          hint = `What adds with ${n} to make 100?`;
+          break;
+        }
+      }
+
+      return {
+        topicKey: topic,
+        topicName: TOPIC_CONFIG[topic].name,
+        topicColor: TOPIC_CONFIG[topic].color,
+        display,
+        expectedAnswer: answer,
+        validAnswers,
+        hint,
+        multipleChoices,
+        startTime: Date.now()
+      };
+    }
+
+    /* ----------------------------------------------------
+     * Navigation & UI Setup Logic
+     * ---------------------------------------------------- */
+    function setMode(modeKey) {
+      currentMode = modeKey;
+      document.querySelectorAll('.mode-btn').forEach(btn => {
+        btn.classList.remove('border-brand-500/60', 'bg-brand-500/10', 'text-white');
+        btn.classList.add('border-slate-800', 'bg-slate-800/40', 'text-slate-300');
+      });
+      const activeBtn = document.getElementById(`mode-${modeKey}`);
+      if (activeBtn) {
+        activeBtn.classList.remove('border-slate-800', 'bg-slate-800/40', 'text-slate-300');
+        activeBtn.classList.add('border-brand-500/60', 'bg-brand-500/10', 'text-white');
+      }
+    }
+
+    function selectAllTopics(shouldSelect) {
+      document.querySelectorAll('input[name="topics"]').forEach(cb => {
+        cb.checked = shouldSelect;
+      });
+    }
+
+    function toggleReferenceModal(show) {
+      const modal = document.getElementById('referenceModal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function returnToSetup() {
+      if (timerInterval) clearInterval(timerInterval);
+      document.getElementById('setupView').classList.remove('hidden');
+      document.getElementById('quizView').classList.add('hidden');
+      document.getElementById('resultsView').classList.add('hidden');
+    }
+
+    /* ----------------------------------------------------
+     * Quiz Lifecycle: Start & Next Question
+     * ---------------------------------------------------- */
+    function startQuiz() {
+      // Gather selected topics
+      const checkboxes = document.querySelectorAll('input[name="topics"]:checked');
+      selectedTopics = Array.from(checkboxes).map(cb => cb.value);
+
+      const errorBox = document.getElementById('selectionError');
+      if (selectedTopics.length === 0) {
+        errorBox.classList.remove('hidden');
+        return;
+      }
+      errorBox.classList.add('hidden');
+
+      // Initialize state
+      score = 0;
+      streak = 0;
+      bestStreak = 0;
+      correctCount = 0;
+      totalQuestionsAnswered = 0;
+      currentQuestionIndex = 0;
+      sessionMistakes = [];
+      topicStats = {};
+
+      selectedTopics.forEach(t => {
+        topicStats[t] = { correct: 0, total: 0 };
+      });
+
+      // Show/Hide on-screen keypad based on config
+      const showKeypad = document.getElementById('keypadToggle').checked;
+      const keypadEl = document.getElementById('virtualKeypad');
+      if (showKeypad) {
+        keypadEl.classList.remove('hidden');
+      } else {
+        keypadEl.classList.add('hidden');
+      }
+
+      // Setup Mode Timers / Target Counts
+      const timerBadge = document.getElementById('timerBadge');
+      const progressBadge = document.getElementById('progressBadge');
+
+      if (currentMode === 'blitz60') {
+        timeLeft = 60;
+        totalTimeAllocated = 60;
+        timerBadge.classList.remove('hidden');
+        progressBadge.classList.add('hidden');
+      } else if (currentMode === 'blitz120') {
+        timeLeft = 120;
+        totalTimeAllocated = 120;
+        timerBadge.classList.remove('hidden');
+        progressBadge.classList.add('hidden');
+      } else if (currentMode === 'standard20') {
+        targetQuestionCount = 20;
+        timeLeft = 0;
+        timerBadge.classList.add('hidden');
+        progressBadge.classList.remove('hidden');
+        document.getElementById('totalQNum').innerText = '20';
+      } else { // endless
+        timeLeft = 0;
+        timerBadge.classList.remove('hidden');
+        document.getElementById('timerDisplay').innerText = '∞';
+        progressBadge.classList.add('hidden');
+      }
+
+      sessionStartTime = Date.now();
+
+      // Switch views
+      document.getElementById('setupView').classList.add('hidden');
+      document.getElementById('resultsView').classList.add('hidden');
+      document.getElementById('quizView').classList.remove('hidden');
+
+      // Update HUD Difficulty badge appearance
+      const hudDiffBadge = document.getElementById('hudDifficultyBadge');
+      hudDiffBadge.innerText = currentDifficulty.toUpperCase();
+      if (currentDifficulty === 'easy') {
+        hudDiffBadge.className = 'px-2.5 py-1 rounded-xl font-mono text-xs font-bold uppercase tracking-wide bg-emerald-500/10 text-emerald-400 border border-emerald-500/30';
+      } else if (currentDifficulty === 'medium') {
+        hudDiffBadge.className = 'px-2.5 py-1 rounded-xl font-mono text-xs font-bold uppercase tracking-wide bg-amber-500/10 text-amber-400 border border-amber-500/30';
+      } else {
+        hudDiffBadge.className = 'px-2.5 py-1 rounded-xl font-mono text-xs font-bold uppercase tracking-wide bg-rose-500/10 text-rose-400 border border-rose-500/30';
+      }
+
+      // Start timer if blitz
+      if (currentMode.startsWith('blitz')) {
+        updateTimerDisplay();
+        timerInterval = setInterval(() => {
+          timeLeft--;
+          updateTimerDisplay();
+          if (timeLeft <= 5 && timeLeft > 0) {
+            soundTick();
+          }
+          if (timeLeft <= 0) {
+            clearInterval(timerInterval);
+            finishQuizSession();
+          }
+        }, 1000);
+      }
+
+      updateHUD();
+      loadNextQuestion();
+    }
+
+    function updateTimerDisplay() {
+      const display = document.getElementById('timerDisplay');
+      display.innerText = `${timeLeft}s`;
+      const pct = (timeLeft / totalTimeAllocated) * 100;
+      document.getElementById('progressBar').style.width = `${pct}%`;
+
+      if (timeLeft <= 10) {
+        display.classList.add('text-rose-400');
+      } else {
+        display.classList.remove('text-rose-400');
+      }
+    }
+
+    function updateHUD() {
+      document.getElementById('streakDisplay').innerText = streak;
+      document.getElementById('scoreDisplay').innerText = `${score} pts`;
+      const acc = totalQuestionsAnswered > 0 ? Math.round((correctCount / totalQuestionsAnswered) * 100) : 100;
+      document.getElementById('accuracyDisplay').innerText = `${acc}% acc`;
+
+      if (currentMode === 'standard20') {
+        document.getElementById('currentQNum').innerText = currentQuestionIndex + 1;
+        const progressPct = ((currentQuestionIndex) / targetQuestionCount) * 100;
+        document.getElementById('progressBar').style.width = `${progressPct}%`;
+      }
+    }
+
+    function loadNextQuestion() {
+      currentQuestion = generateQuestion();
+      currentQuestionIndex++;
+
+      // UI Populate
+      const qText = document.getElementById('questionText');
+      const qCat = document.getElementById('questionCategory');
+      const input = document.getElementById('answerInput');
+      const choicesContainer = document.getElementById('fractionChoicesContainer');
+
+      qText.innerText = currentQuestion.display;
+      qCat.innerText = currentQuestion.topicName;
+
+      // Reset styles
+      input.value = "";
+      input.focus();
+
+      // Fractions quick picker pills
+      if (currentQuestion.multipleChoices && currentQuestion.topicKey === 'fractions') {
+        choicesContainer.innerHTML = '';
+        currentQuestion.multipleChoices.forEach(choice => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = 'py-2 px-3 rounded-xl bg-slate-800/90 hover:bg-brand-600/30 border border-slate-700 text-slate-200 hover:text-white font-mono text-sm font-semibold transition-all active:scale-95';
+          btn.innerText = choice;
+          btn.onclick = () => {
+            input.value = choice;
+            submitAnswer(choice);
+          };
+          choicesContainer.appendChild(btn);
+        });
+        choicesContainer.classList.remove('hidden');
+      } else {
+        choicesContainer.classList.add('hidden');
+      }
+    }
+
+    /* ----------------------------------------------------
+     * Answer Submission & Evaluation
+     * ---------------------------------------------------- */
+    function handleFormSubmit(e) {
+      if (e) e.preventDefault();
+      const val = document.getElementById('answerInput').value;
+      submitAnswer(val);
+    }
+
+    function cleanString(str) {
+      if (!str) return "";
+      return str.toString().trim().toLowerCase().replace('%', '').replace(/\s+/g, '');
+    }
+
+    function checkAnswerMatch(userVal, questionObj) {
+      const cleanUser = cleanString(userVal);
+      if (!cleanUser) return false;
+
+      // Check against all valid representations
+      for (let valid of questionObj.validAnswers) {
+        if (cleanUser === cleanString(valid)) {
+          return true;
+        }
+      }
+
+      // Numerical tolerance for floating decimals (e.g. 16.66 vs 16.67)
+      const numUser = parseFloat(cleanUser);
+      const numExpected = parseFloat(cleanString(questionObj.expectedAnswer));
+      if (!isNaN(numUser) && !isNaN(numExpected)) {
+        if (Math.abs(numUser - numExpected) <= 0.05) {
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function triggerVisualFeedback(isCorrect, expected) {
+      const card = document.getElementById('questionCard');
+      const pill = document.getElementById('feedbackPill');
+
+      card.classList.remove('animate-shake', 'animate-pulseSuccess');
+      void card.offsetWidth; // Force re-flow
+
+      if (isCorrect) {
+        card.classList.add('animate-pulseSuccess', 'border-emerald-500/80');
+        pill.innerText = streak >= 5 ? `🔥 STREAK x${streak}! +${10 + streak * 2}` : 'Correct! +10';
+        pill.className = 'absolute -top-3.5 px-4 py-1 rounded-full text-xs font-bold font-mono tracking-wide shadow-md transition-all duration-200 bg-emerald-500 text-slate-950 opacity-100 scale-100';
+      } else {
+        card.classList.add('animate-shake', 'border-rose-500/80');
+        pill.innerText = `Incorrect: ${expected}`;
+        pill.className = 'absolute -top-3.5 px-4 py-1 rounded-full text-xs font-bold font-mono tracking-wide shadow-md transition-all duration-200 bg-rose-500 text-white opacity-100 scale-100';
+      }
+
+      setTimeout(() => {
+        card.classList.remove('border-emerald-500/80', 'border-rose-500/80');
+        pill.classList.add('opacity-0');
+      }, 700);
+    }
+
+    function submitAnswer(rawInput) {
+      if (!currentQuestion) return;
+
+      const userVal = rawInput || document.getElementById('answerInput').value;
+      if (!userVal.trim()) return;
+
+      totalQuestionsAnswered++;
+      const timeTaken = (Date.now() - currentQuestion.startTime) / 1000;
+      const isCorrect = checkAnswerMatch(userVal, currentQuestion);
+
+      // Record category stats
+      if (!topicStats[currentQuestion.topicKey]) {
+        topicStats[currentQuestion.topicKey] = { correct: 0, total: 0 };
+      }
+      topicStats[currentQuestion.topicKey].total++;
+
+      if (isCorrect) {
+        streak++;
+        if (streak > bestStreak) bestStreak = streak;
+        correctCount++;
+        topicStats[currentQuestion.topicKey].correct++;
+
+        // Dynamic points based on speed, streak and difficulty multiplier
+        const speedBonus = Math.max(0, Math.floor(5 - timeTaken));
+        const streakBonus = Math.min(20, streak * 2);
+        const earnedPoints = Math.round((10 + speedBonus + streakBonus) * difficultyMultiplier);
+        score += earnedPoints;
+
+        soundCorrect();
+        triggerVisualFeedback(true, currentQuestion.expectedAnswer);
+      } else {
+        streak = 0;
+        soundWrong();
+        triggerVisualFeedback(false, currentQuestion.expectedAnswer);
+
+        // Store mistake
+        sessionMistakes.push({
+          question: currentQuestion.display,
+          userAnswer: userVal,
+          expected: currentQuestion.expectedAnswer,
+          topic: currentQuestion.topicName
+        });
+
+        // Time penalty in blitz
+        if (currentMode.startsWith('blitz') && timeLeft > 3) {
+          timeLeft = Math.max(1, timeLeft - 2);
+          updateTimerDisplay();
+        }
+      }
+
+      updateHUD();
+
+      // Check if standard 20 mode is finished
+      if (currentMode === 'standard20' && currentQuestionIndex >= targetQuestionCount) {
+        setTimeout(finishQuizSession, 400);
+        return;
+      }
+
+      // Next question after brief pause for feedback perception
+      setTimeout(loadNextQuestion, 220);
+    }
+
+    function skipQuestion() {
+      if (!currentQuestion) return;
+      totalQuestionsAnswered++;
+      streak = 0;
+      soundWrong();
+
+      if (!topicStats[currentQuestion.topicKey]) {
+        topicStats[currentQuestion.topicKey] = { correct: 0, total: 0 };
+      }
+      topicStats[currentQuestion.topicKey].total++;
+
+      sessionMistakes.push({
+        question: currentQuestion.display,
+        userAnswer: "Skipped",
+        expected: currentQuestion.expectedAnswer,
+        topic: currentQuestion.topicName
+      });
+
+      triggerVisualFeedback(false, currentQuestion.expectedAnswer);
+      updateHUD();
+
+      if (currentMode === 'standard20' && currentQuestionIndex >= targetQuestionCount) {
+        setTimeout(finishQuizSession, 300);
+        return;
+      }
+
+      setTimeout(loadNextQuestion, 300);
+    }
+
+    function endQuizEarly() {
+      if (timerInterval) clearInterval(timerInterval);
+      finishQuizSession();
+    }
+
+    /* ----------------------------------------------------
+     * Keypad & Controls
+     * ---------------------------------------------------- */
+    function keypadPress(char) {
+      const input = document.getElementById('answerInput');
+      input.value += char;
+      input.focus();
+    }
+
+    function keypadBackspace() {
+      const input = document.getElementById('answerInput');
+      input.value = input.value.slice(0, -1);
+      input.focus();
+    }
+
+    function clearInput() {
+      const input = document.getElementById('answerInput');
+      input.value = "";
+      input.focus();
+    }
+
+    /* ----------------------------------------------------
+     * Quiz Completion & Analytics Review
+     * ---------------------------------------------------- */
+    function finishQuizSession() {
+      if (timerInterval) clearInterval(timerInterval);
+
+      document.getElementById('quizView').classList.add('hidden');
+      document.getElementById('resultsView').classList.remove('hidden');
+
+      const elapsedSec = Math.max(1, (Date.now() - sessionStartTime) / 1000);
+      const acc = totalQuestionsAnswered > 0 ? Math.round((correctCount / totalQuestionsAnswered) * 100) : 0;
+      const avgPace = totalQuestionsAnswered > 0 ? (elapsedSec / totalQuestionsAnswered).toFixed(1) : "0.0";
+
+      // Populate KPI values
+      document.getElementById('finalScoreVal').innerText = score;
+      document.getElementById('finalAccVal').innerText = `${acc}%`;
+      document.getElementById('finalStreakVal').innerText = `${bestStreak} 🔥`;
+      document.getElementById('finalPaceVal').innerText = `${avgPace}s`;
+
+      const finalDiffTag = document.getElementById('finalDiffTag');
+      finalDiffTag.innerText = currentDifficulty.toUpperCase();
+      if (currentDifficulty === 'easy') {
+        finalDiffTag.className = "text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 absolute top-2 right-2 border border-emerald-500/30";
+      } else if (currentDifficulty === 'medium') {
+        finalDiffTag.className = "text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-amber-500/20 text-amber-300 absolute top-2 right-2 border border-amber-500/30";
+      } else {
+        finalDiffTag.className = "text-[9px] font-mono uppercase px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 absolute top-2 right-2 border border-rose-500/30";
+      }
+
+      const summarySub = document.getElementById('resultSummarySubtext');
+      if (acc >= 90 && score > 150) {
+        summarySub.innerText = "Mastery Level! Lightning quick mental calculation.";
+      } else if (acc >= 75) {
+        summarySub.innerText = "Strong session! Practice tricky topics to build intuition.";
+      } else {
+        summarySub.innerText = "Great effort! Review the flashcards below to tighten your recall.";
+      }
+
+      // Render category breakdown
+      const breakdownList = document.getElementById('categoryBreakdownList');
+      breakdownList.innerHTML = "";
+
+      Object.keys(topicStats).forEach(key => {
+        const item = topicStats[key];
+        if (item.total === 0) return;
+
+        const topicPct = Math.round((item.correct / item.total) * 100);
+        const barColor = topicPct >= 80 ? 'bg-emerald-500' : topicPct >= 50 ? 'bg-amber-500' : 'bg-rose-500';
+
+        const row = document.createElement('div');
+        row.className = 'bg-slate-800/40 p-2.5 rounded-xl border border-slate-700/50 flex flex-col gap-1.5';
+        row.innerHTML = `
+          <div class="flex items-center justify-between text-xs">
+            <span class="font-bold text-slate-200">${TOPIC_CONFIG[key].name}</span>
+            <div class="flex items-center gap-2 font-mono">
+              <span class="text-slate-400">${item.correct}/${item.total}</span>
+              <span class="font-bold text-white">${topicPct}%</span>
+            </div>
+          </div>
+          <div class="w-full bg-slate-700/50 h-1.5 rounded-full overflow-hidden">
+            <div class="${barColor} h-full transition-all duration-500" style="width: ${topicPct}%"></div>
+          </div>
+        `;
+        breakdownList.appendChild(row);
+      });
+
+      // Render Mistakes
+      const mistakesContainer = document.getElementById('mistakesContainer');
+      const mistakesList = document.getElementById('mistakesList');
+      mistakesList.innerHTML = "";
+
+      if (sessionMistakes.length > 0) {
+        mistakesContainer.classList.remove('hidden');
+        sessionMistakes.forEach(m => {
+          const mItem = document.createElement('div');
+          mItem.className = 'p-2 rounded-lg bg-rose-950/20 border border-rose-900/30 flex items-center justify-between text-xs font-mono';
+          mItem.innerHTML = `
+            <div>
+              <span class="text-slate-200 font-bold">${m.question}</span>
+              <span class="text-[10px] text-slate-500 ml-2">(${m.topic})</span>
+            </div>
+            <div class="text-right">
+              <span class="text-rose-400 line-through mr-2">${m.userAnswer}</span>
+              <span class="text-emerald-400 font-bold">${m.expected}</span>
+            </div>
+          `;
+          mistakesList.appendChild(mItem);
+        });
+      } else {
+        mistakesContainer.classList.add('hidden');
+      }
+
+      lucide.createIcons();
+    }
+
+    function restartSameQuiz() {
+      startQuiz();
+    }
+
+    // Keyboard event listeners for rapid calculations
+    document.addEventListener('keydown', (e) => {
+      // If quiz is visible
+      const quizView = document.getElementById('quizView');
+      if (quizView.classList.contains('hidden')) return;
+
+      const input = document.getElementById('answerInput');
+
+      // Keep focus on input for instantaneous physical typing
+      if (document.activeElement !== input && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+        input.focus();
+      }
+
+      // Enter key submits
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        handleFormSubmit();
+      }
+    });
+
+    // Initialize icons on DOM ready
+    window.onload = function() {
+      lucide.createIcons();
+    };
+  </script>
+</body>
+</html>
